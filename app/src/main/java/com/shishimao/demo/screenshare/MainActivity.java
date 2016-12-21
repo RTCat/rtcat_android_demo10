@@ -113,19 +113,15 @@ public class MainActivity extends Activity {
                                 createScreenStream();
                             }
                         });
-
                     }
-
                     @Override
                     public void error(Errors error) {
 
                     }
                 });
-
                 cat.init();
             }
         }
-
     }
 
 
