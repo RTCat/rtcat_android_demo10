@@ -61,7 +61,8 @@ public class MainActivity extends Activity {
 
     Intent screenIntent;
 
-    private static final int REQUEST_CODE = 777;
+    private static final int PERMISSION_REQUEST_CODE = 777;
+    private static final int SCREEN_REQUEST_CODE = 751;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,7 +81,7 @@ public class MainActivity extends Activity {
         if (ContextCompat.checkSelfPermission(this,android.Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED
                 && Build.VERSION.SDK_INT >= 23) {
-            requestPermissions(permissions, REQUEST_CODE);
+            requestPermissions(permissions, PERMISSION_REQUEST_CODE);
         }else {
             start();
         }
@@ -88,7 +89,7 @@ public class MainActivity extends Activity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if(requestCode==REQUEST_CODE){
+        if(requestCode== PERMISSION_REQUEST_CODE){
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 start();
@@ -98,35 +99,40 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        screenIntent = data;
-        cat = new RTCat(this,true,true,true,true, AppRTCAudioManager.AudioDevice.SPEAKER_PHONE, RTCat.CodecSupported.H264, L.DEBUG);
-        cat.addObserver(new RTCat.RTCatObserver() {
-            @Override
-            public void init() {
-                runOnUiThread(new Runnable() {
+        if(requestCode == SCREEN_REQUEST_CODE){
+            Log.i(TAG,"result " + resultCode);
+            if(resultCode == RESULT_OK){
+                screenIntent = data;
+                cat = new RTCat(this,true,true,true,true, AppRTCAudioManager.AudioDevice.SPEAKER_PHONE, RTCat.CodecSupported.H264, L.DEBUG);
+                cat.addObserver(new RTCat.RTCatObserver() {
                     @Override
-                    public void run() {
-                        createScreenStream();
+                    public void init() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                createScreenStream();
+                            }
+                        });
+
+                    }
+
+                    @Override
+                    public void error(Errors error) {
+
                     }
                 });
 
+                cat.init();
             }
+        }
 
-            @Override
-            public void error(Errors error) {
-
-            }
-        });
-
-        cat.init();
     }
 
 
     private void start(){
         MediaProjectionManager manager = (MediaProjectionManager)getSystemService(Context.MEDIA_PROJECTION_SERVICE);
         Intent intent = manager.createScreenCaptureIntent();
-        startActivityForResult(intent, 999);
+        startActivityForResult(intent, SCREEN_REQUEST_CODE);
     }
 
     private  void  createScreenStream(){
